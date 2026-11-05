@@ -1,0 +1,4 @@
+# zdos-dsn-code-align v1: artefatti di build
+__pycache__/
+*.pyc
+policy/target/
