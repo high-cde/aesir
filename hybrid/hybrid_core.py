@@ -3,6 +3,7 @@ import os, json, socket, subprocess, sys, logging
 from pathlib import Path
 from datetime import datetime
 sys.path.insert(0, "/root/zdos-aesir/aesir")
+sys.path.insert(0, os.environ.get("AESIR_HOME") or str(Path(__file__).resolve().parent.parent))  # zdos-dsn-code-align v1: non solo /root
 from dsn_gate import has_min_dsn, get_limit_for, get_balance
 
 logging.basicConfig(

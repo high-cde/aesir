@@ -4,6 +4,8 @@ import json, subprocess
 from pathlib import Path
 import sys
 sys.path.insert(0, "/root/zdos-aesir/aesir")
+import os
+sys.path.insert(0, os.environ.get("AESIR_HOME") or str(Path(__file__).resolve().parent))  # zdos-dsn-code-align v1: non solo /root
 from dsn_gate import get_balance
 
 class Handler(BaseHTTPRequestHandler):
