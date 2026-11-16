@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Æsir · Crypto Dashboard ZDOS</title>
+  <style>
+    :root { --bg:#050010; --card:#0f0025; --accent:#00ff9d; --purple:#6c2bd9; --text:#e8e8ff; --muted:#a0a0c0; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { background:var(--bg); color:var(--text); font-family:system-ui,sans-serif; min-height:100vh; padding:20px; }
+    header { text-align:center; margin-bottom:30px; }
+    h1 { font-size:clamp(2rem,6vw,3.5rem); background:linear-gradient(90deg,#fff,var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; max-width:1200px; margin:0 auto; }
+    .card { background:var(--card); border:1px solid var(--purple); border-radius:16px; padding:20px; }
+    .card h2 { color:var(--accent); margin-bottom:12px; font-size:1.2rem; }
+    .balance { font-size:2rem; font-weight:700; }
+    .muted { color:var(--muted); font-size:0.9rem; }
+    button, .btn { background:var(--purple); color:white; border:none; padding:10px 18px; border-radius:999px; cursor:pointer; font-weight:500; text-decoration:none; display:inline-block; }
+    button:hover, .btn:hover { background:var(--accent); color:#000; }
+    input { width:100%; padding:10px; margin:8px 0; background:#1a0033; border:1px solid var(--purple); border-radius:8px; color:white; }
+    .status-on { color:var(--accent); font-weight:bold; }
+    footer { text-align:center; margin-top:40px; opacity:0.6; font-size:0.85rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Æsir Dashboard</h1>
+    <p class="muted">Gate $DSN · Polygon + Solana · ZDOS1.3</p>
+    <div style="margin-top:15px;">
+      <button onclick="connectWallet()">Connetti Wallet</button>
+      <span id="walletAddr" class="muted" style="margin-left:12px;"></span>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <h2>$DSN Polygon</h2>
+      <div class="balance" id="polyBal">--</div>
+      <div class="muted">0xfc90516a1f736FaC557e09D8853dB80dA192c296</div>
+      <button onclick="loadPolygon()" style="margin-top:10px;">Aggiorna</button>
+    </div>
+    <div class="card">
+      <h2>$DSN Solana</h2>
+      <div class="balance" id="solBal">--</div>
+      <div class="muted">35w74RT77BPSYNpmzpvxmR9wu2ihpgzubKy4bkGHR3F4</div>
+      <button onclick="loadSolana()" style="margin-top:10px;">Aggiorna</button>
+    </div>
+    <div class="card">
+      <h2>Gate Æsir</h2>
+      <p>Status: <span class="status-on">ON</span></p>
+      <p>Min balance: 1 $DSN</p>
+      <p>High limit: 10 $DSN</p>
+      <p>Hourly base: 500M</p>
+      <p>Hourly boosted: 5B</p>
+    </div>
+    <div class="card">
+      <h2>RPC Status</h2>
+      <p id="rpcStatus">Controllo...</p>
+      <button onclick="checkRPC()" style="margin-top:10px;">Test RPC</button>
+    </div>
+  </div>
+
+  <div class="card" style="max-width:800px; margin:30px auto;">
+    <h2>Query Balance manuale</h2>
+    <input id="addrInput" placeholder="Incolla address Polygon o Solana">
+    <button onclick="queryManual()">Query</button>
+    <div id="manualResult" style="margin-top:12px;"></div>
+  </div>
+
+  <footer>
+    Æsir · ZDOS Ecosystem · <a href="https://github.com/high-cde/aesir" style="color:var(--accent);">GitHub</a> ·
+    <a href="https://high-cde.github.io/" style="color:var(--accent);">Super Pannello</a>
+  </footer>
+
+  <script>
+    const POLYGON_RPC = 'https://polygon.drpc.org';
+    const POLYGON_CONTRACT = '0xfc90516a1f736FaC557e09D8853dB80dA192c296';
+    const SOLANA_RPC = 'https://api.mainnet-beta.solana.com';
+    const SOLANA_MINT = '35w74RT77BPSYNpmzpvxmR9wu2ihpgzubKy4bkGHR3F4';
+    let connectedAddress = null;
+
+    async function connectWallet() {
+      if (window.ethereum) {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        connectedAddress = accounts[0];
+        document.getElementById('walletAddr').textContent = connectedAddress.slice(0,6)+'...'+connectedAddress.slice(-4);
+        loadPolygon();
+      } else if (window.solana && window.solana.isPhantom) {
+        const resp = await window.solana.connect();
+        connectedAddress = resp.publicKey.toString();
+        document.getElementById('walletAddr').textContent = connectedAddress.slice(0,6)+'...'+connectedAddress.slice(-4);
+        loadSolana();
+      } else {
+        alert('Installa MetaMask o Phantom');
+      }
+    }
+
+    async function getPolygonBalance(addr) {
+      const data = '0x70a08231' + addr.slice(2).toLowerCase().padStart(64,'0');
+      const res = await fetch(POLYGON_RPC, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({jsonrpc:'2.0', id:1, method:'eth_call', params:[{to:POLYGON_CONTRACT, data}, 'latest']})
+      });
+      const json = await res.json();
+      const wei = BigInt(json.result || '0x0');
+      return Number(wei) / 1e18;
+    }
+
+    async function getSolanaBalance(addr) {
+      // Simplified: token accounts by owner (requires more logic for real balance; placeholder for now)
+      try {
+        const res = await fetch(SOLANA_RPC, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            jsonrpc:'2.0', id:1, method:'getTokenAccountsByOwner',
+            params:[addr, {mint: SOLANA_MINT}, {encoding:'jsonParsed'}]
+          })
+        });
+        const json = await res.json();
+        if (json.result && json.result.value.length) {
+          const amount = json.result.value[0].account.data.parsed.info.tokenAmount.uiAmount;
+          return amount || 0;
+        }
+        return 0;
+      } catch(e) { return 0; }
+    }
+
+    async function loadPolygon() {
+      const addr = connectedAddress || prompt('Address Polygon:') || '';
+      if (!addr.startsWith('0x')) return;
+      const bal = await getPolygonBalance(addr);
+      document.getElementById('polyBal').textContent = bal.toFixed(4) + ' $DSN';
+    }
+
+    async function loadSolana() {
+      const addr = connectedAddress || prompt('Address Solana:') || '';
+      const bal = await getSolanaBalance(addr);
+      document.getElementById('solBal').textContent = bal.toFixed(4) + ' $DSN';
+    }
+
+    async function checkRPC() {
+      try {
+        const r = await fetch(POLYGON_RPC, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_chainId',params:[]})});
+        const j = await r.json();
+        document.getElementById('rpcStatus').innerHTML = 'Polygon: <span class="status-on">OK (chain '+parseInt(j.result,16)+')</span>';
+      } catch(e) {
+        document.getElementById('rpcStatus').textContent = 'RPC errore';
+      }
+    }
+
+    async function queryManual() {
+      const addr = document.getElementById('addrInput').value.trim();
+      if (!addr) return;
+      let res = '';
+      if (addr.startsWith('0x')) {
+        const bal = await getPolygonBalance(addr);
+        res = 'Polygon: ' + bal.toFixed(4) + ' $DSN';
+      } else {
+        const bal = await getSolanaBalance(addr);
+        res = 'Solana: ' + bal.toFixed(4) + ' $DSN';
+      }
+      document.getElementById('manualResult').innerHTML = '<strong>'+res+'</strong>';
+    }
+
+    checkRPC();
+  </script>
+</body>
+</html>
