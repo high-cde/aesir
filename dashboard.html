@@ -1,75 +1,75 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Æsir · Crypto Dashboard ZDOS</title>
+  <title>Æsir · Crypto Dashboard · ZDOS</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    :root { --bg:#050010; --card:#0f0025; --accent:#00ff9d; --purple:#6c2bd9; --text:#e8e8ff; --muted:#a0a0c0; }
-    * { box-sizing:border-box; margin:0; padding:0; }
-    body { background:var(--bg); color:var(--text); font-family:system-ui,sans-serif; min-height:100vh; padding:20px; }
-    header { text-align:center; margin-bottom:30px; }
-    h1 { font-size:clamp(2rem,6vw,3.5rem); background:linear-gradient(90deg,#fff,var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; max-width:1200px; margin:0 auto; }
-    .card { background:var(--card); border:1px solid var(--purple); border-radius:16px; padding:20px; }
-    .card h2 { color:var(--accent); margin-bottom:12px; font-size:1.2rem; }
-    .balance { font-size:2rem; font-weight:700; }
-    .muted { color:var(--muted); font-size:0.9rem; }
-    button, .btn { background:var(--purple); color:white; border:none; padding:10px 18px; border-radius:999px; cursor:pointer; font-weight:500; text-decoration:none; display:inline-block; }
-    button:hover, .btn:hover { background:var(--accent); color:#000; }
-    input { width:100%; padding:10px; margin:8px 0; background:#1a0033; border:1px solid var(--purple); border-radius:8px; color:white; }
-    .status-on { color:var(--accent); font-weight:bold; }
-    footer { text-align:center; margin-top:40px; opacity:0.6; font-size:0.85rem; }
+    body { font-family: 'JetBrains Mono', monospace; background-color: #05070a; color: #00ff88; }
+    .enterprise-box { background: rgba(10, 15, 24, 0.9); border: 1px solid rgba(0, 255, 136, 0.2); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); }
+    .badge-cyan { background: rgba(6, 182, 212, 0.1); color: #06b6d4; border: 1px solid rgba(6, 182, 212, 0.3); }
   </style>
 </head>
-<body>
-  <header>
-    <h1>Æsir Dashboard</h1>
-    <p class="muted">Gate $DSN · Polygon + Solana · ZDOS1.3</p>
-    <div style="margin-top:15px;">
-      <button onclick="connectWallet()">Connetti Wallet</button>
-      <span id="walletAddr" class="muted" style="margin-left:12px;"></span>
+<body class="min-h-screen flex flex-col selection:bg-emerald-500 selection:text-black">
+
+  <header class="border-b border-emerald-500/20 bg-black/80 backdrop-blur sticky top-0 z-50 px-6 py-3 flex justify-between items-center text-xs">
+    <div class="flex items-center gap-3">
+      <span class="w-2 h-2 bg-emerald-400 rounded-full animate-ping"></span>
+      <span class="font-bold text-emerald-400 tracking-wider">ÆSIR // CRYPTO DASHBOARD</span>
+    </div>
+    <div class="flex gap-4 items-center">
+      <span id="walletAddr" class="text-emerald-300 text-[10px]"></span>
+      <button onclick="connectWallet()" class="px-3 py-1 rounded bg-emerald-950/50 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-900/50">CONNETTI WALLET</button>
     </div>
   </header>
 
-  <div class="grid">
-    <div class="card">
-      <h2>$DSN Polygon</h2>
-      <div class="balance" id="polyBal">--</div>
-      <div class="muted">0xfc90516a1f736FaC557e09D8853dB80dA192c296</div>
-      <button onclick="loadPolygon()" style="margin-top:10px;">Aggiorna</button>
+  <main class="max-w-7xl mx-auto px-6 py-8 flex-grow space-y-8 w-full">
+    <div class="text-center space-y-2">
+      <span class="text-[10px] uppercase tracking-widest px-2.5 py-1 rounded badge-cyan font-bold">ZDOS1.3 · GATE $DSN · POLYGON + SOLANA</span>
+      <h1 class="text-3xl md:text-4xl font-bold text-white tracking-tight">Æsir Dashboard</h1>
+      <p class="text-slate-400 text-xs">Policy engine e balance gate in tempo reale · APIs pubbliche attive</p>
     </div>
-    <div class="card">
-      <h2>$DSN Solana</h2>
-      <div class="balance" id="solBal">--</div>
-      <div class="muted">35w74RT77BPSYNpmzpvxmR9wu2ihpgzubKy4bkGHR3F4</div>
-      <button onclick="loadSolana()" style="margin-top:10px;">Aggiorna</button>
-    </div>
-    <div class="card">
-      <h2>Gate Æsir</h2>
-      <p>Status: <span class="status-on">ON</span></p>
-      <p>Min balance: 1 $DSN</p>
-      <p>High limit: 10 $DSN</p>
-      <p>Hourly base: 500M</p>
-      <p>Hourly boosted: 5B</p>
-    </div>
-    <div class="card">
-      <h2>RPC Status</h2>
-      <p id="rpcStatus">Controllo...</p>
-      <button onclick="checkRPC()" style="margin-top:10px;">Test RPC</button>
-    </div>
-  </div>
 
-  <div class="card" style="max-width:800px; margin:30px auto;">
-    <h2>Query Balance manuale</h2>
-    <input id="addrInput" placeholder="Incolla address Polygon o Solana">
-    <button onclick="queryManual()">Query</button>
-    <div id="manualResult" style="margin-top:12px;"></div>
-  </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="enterprise-box rounded-xl p-5">
+        <h2 class="text-emerald-400 text-sm font-bold mb-2">$DSN POLYGON</h2>
+        <div id="polyBal" class="text-2xl font-bold text-white">--</div>
+        <p class="text-[10px] text-slate-500 mt-1 break-all">0xfc90516a1f736FaC557e09D8853dB80dA192c296</p>
+        <button onclick="loadPolygon()" class="mt-3 text-xs px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-black rounded">AGGIORNA</button>
+      </div>
+      <div class="enterprise-box rounded-xl p-5">
+        <h2 class="text-emerald-400 text-sm font-bold mb-2">$DSN SOLANA</h2>
+        <div id="solBal" class="text-2xl font-bold text-white">--</div>
+        <p class="text-[10px] text-slate-500 mt-1 break-all">35w74RT77BPSYNpmzpvxmR9wu2ihpgzubKy4bkGHR3F4</p>
+        <button onclick="loadSolana()" class="mt-3 text-xs px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-black rounded">AGGIORNA</button>
+      </div>
+      <div class="enterprise-box rounded-xl p-5">
+        <h2 class="text-emerald-400 text-sm font-bold mb-2">GATE ÆSIR</h2>
+        <p class="text-sm">Status: <span class="text-emerald-400 font-bold">ON</span></p>
+        <p class="text-xs text-slate-400">Min: 1 $DSN</p>
+        <p class="text-xs text-slate-400">High: 10 $DSN</p>
+        <p class="text-xs text-slate-400">Hourly base/boosted: 500M / 5B</p>
+      </div>
+      <div class="enterprise-box rounded-xl p-5">
+        <h2 class="text-emerald-400 text-sm font-bold mb-2">RPC STATUS</h2>
+        <p id="rpcStatus" class="text-sm text-slate-300">Controllo...</p>
+        <button onclick="checkRPC()" class="mt-3 text-xs px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-black rounded">TEST RPC</button>
+      </div>
+    </div>
 
-  <footer>
-    Æsir · ZDOS Ecosystem · <a href="https://github.com/high-cde/aesir" style="color:var(--accent);">GitHub</a> ·
-    <a href="https://high-cde.github.io/" style="color:var(--accent);">Super Pannello</a>
+    <div class="enterprise-box rounded-xl p-6 max-w-2xl mx-auto">
+      <h2 class="text-emerald-400 text-sm font-bold mb-3">QUERY MANUALE</h2>
+      <input id="addrInput" placeholder="Address Polygon (0x...) o Solana" class="w-full bg-black/50 border border-emerald-500/30 rounded px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-400">
+      <button onclick="queryManual()" class="mt-3 text-xs px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-black rounded font-bold">QUERY BALANCE</button>
+      <div id="manualResult" class="mt-3 text-sm text-emerald-300"></div>
+    </div>
+  </main>
+
+  <footer class="border-t border-emerald-500/20 text-center py-6 text-[10px] text-slate-500">
+    Æsir · ZDOS Ecosystem · <a href="https://x-zdos.it" class="text-emerald-400 hover:underline">x-zdos.it</a> ·
+    <a href="https://github.com/high-cde/aesir" class="text-emerald-400 hover:underline">GitHub</a>
   </footer>
 
   <script>
@@ -80,27 +80,32 @@
     let connectedAddress = null;
 
     async function connectWallet() {
-      if (window.ethereum) {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        connectedAddress = accounts[0];
-        document.getElementById('walletAddr').textContent = connectedAddress.slice(0,6)+'...'+connectedAddress.slice(-4);
-        loadPolygon();
-      } else if (window.solana && window.solana.isPhantom) {
-        const resp = await window.solana.connect();
-        connectedAddress = resp.publicKey.toString();
-        document.getElementById('walletAddr').textContent = connectedAddress.slice(0,6)+'...'+connectedAddress.slice(-4);
-        loadSolana();
+      if (window.solana && window.solana.isPhantom) {
+        try {
+          const resp = await window.solana.connect();
+          connectedAddress = resp.publicKey.toString();
+          document.getElementById('walletAddr').textContent = connectedAddress.slice(0,4) + '...' + connectedAddress.slice(-4);
+          loadSolana();
+        } catch(e) { alert('Connessione Phantom fallita'); }
+      } else if (window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          connectedAddress = accounts[0];
+          document.getElementById('walletAddr').textContent = connectedAddress.slice(0,6) + '...' + connectedAddress.slice(-4);
+          loadPolygon();
+        } catch(e) { alert('Connessione MetaMask fallita'); }
       } else {
-        alert('Installa MetaMask o Phantom');
+        alert('Installa Phantom o MetaMask');
       }
     }
 
     async function getPolygonBalance(addr) {
-      const data = '0x70a08231' + addr.slice(2).toLowerCase().padStart(64,'0');
+      if (!addr.startsWith('0x') || addr.length !== 42) return 0;
+      const data = '0x70a08231' + addr.slice(2).toLowerCase().padStart(64, '0');
       const res = await fetch(POLYGON_RPC, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({jsonrpc:'2.0', id:1, method:'eth_call', params:[{to:POLYGON_CONTRACT, data}, 'latest']})
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({jsonrpc: '2.0', id: 1, method: 'eth_call', params: [{to: POLYGON_CONTRACT, data}, 'latest']})
       });
       const json = await res.json();
       const wei = BigInt(json.result || '0x0');
@@ -108,43 +113,46 @@
     }
 
     async function getSolanaBalance(addr) {
-      // Simplified: token accounts by owner (requires more logic for real balance; placeholder for now)
       try {
         const res = await fetch(SOLANA_RPC, {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
-            jsonrpc:'2.0', id:1, method:'getTokenAccountsByOwner',
-            params:[addr, {mint: SOLANA_MINT}, {encoding:'jsonParsed'}]
+            jsonrpc: '2.0', id: 1, method: 'getTokenAccountsByOwner',
+            params: [addr, {mint: SOLANA_MINT}, {encoding: 'jsonParsed'}]
           })
         });
         const json = await res.json();
-        if (json.result && json.result.value.length) {
-          const amount = json.result.value[0].account.data.parsed.info.tokenAmount.uiAmount;
-          return amount || 0;
+        if (json.result?.value?.length) {
+          return json.result.value[0].account.data.parsed.info.tokenAmount.uiAmount || 0;
         }
         return 0;
       } catch(e) { return 0; }
     }
 
     async function loadPolygon() {
-      const addr = connectedAddress || prompt('Address Polygon:') || '';
+      const addr = connectedAddress && connectedAddress.startsWith('0x') ? connectedAddress : prompt('Address Polygon:') || '';
       if (!addr.startsWith('0x')) return;
       const bal = await getPolygonBalance(addr);
       document.getElementById('polyBal').textContent = bal.toFixed(4) + ' $DSN';
     }
 
     async function loadSolana() {
-      const addr = connectedAddress || prompt('Address Solana:') || '';
+      const addr = connectedAddress && !connectedAddress.startsWith('0x') ? connectedAddress : prompt('Address Solana:') || '';
       const bal = await getSolanaBalance(addr);
       document.getElementById('solBal').textContent = bal.toFixed(4) + ' $DSN';
     }
 
     async function checkRPC() {
       try {
-        const r = await fetch(POLYGON_RPC, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_chainId',params:[]})});
+        const r = await fetch(POLYGON_RPC, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({jsonrpc: '2.0', id: 1, method: 'eth_chainId', params: []})
+        });
         const j = await r.json();
-        document.getElementById('rpcStatus').innerHTML = 'Polygon: <span class="status-on">OK (chain '+parseInt(j.result,16)+')</span>';
+        const chain = parseInt(j.result, 16);
+        document.getElementById('rpcStatus').innerHTML = 'Polygon: <span class="text-emerald-400 font-bold">OK (' + chain + ')</span>';
       } catch(e) {
         document.getElementById('rpcStatus').textContent = 'RPC errore';
       }
@@ -161,7 +169,7 @@
         const bal = await getSolanaBalance(addr);
         res = 'Solana: ' + bal.toFixed(4) + ' $DSN';
       }
-      document.getElementById('manualResult').innerHTML = '<strong>'+res+'</strong>';
+      document.getElementById('manualResult').innerHTML = '<strong>' + res + '</strong>';
     }
 
     checkRPC();
