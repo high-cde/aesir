@@ -1,16 +1,21 @@
 # Æsir — ZDOS Orchestration Layer + Crypto Dashboard
 
-Æsir contiene il policy engine Rust, il gate $DSN (Polygon + Solana) e ora una **dashboard crypto reale** client-side.
+Æsir contiene il policy engine Rust, il gate $DSN (Polygon + Solana) e una **dashboard crypto reale** client-side che replica lo stile estetico di [x-zdos.it](https://x-zdos.it) (dark + JetBrains Mono + emerald #00ff88 + Tailwind).
 
 ## Dashboard
 
-Apri `dashboard.html` (o abilita GitHub Pages) per:
-- Visualizzare balance $DSN su Polygon e Solana
-- Connettere MetaMask / Phantom
-- Controllare status del gate e RPC
-- Query manuali
+- `index.html` / `dashboard.html`: dashboard funzionale con:
+  - Balance $DSN su Polygon e Solana via RPC pubblici
+  - Connessione Phantom / MetaMask
+  - Status gate Æsir e test RPC
+  - Query manuali
 
-**GitHub Pages:** Settings → Pages → Deploy from branch `main` / root. Il sito sarà su `https://high-cde.github.io/aesir/`.
+**Per metterla online (GitHub Pages):**
+1. Vai su **Settings → Pages**
+2. Source: Deploy from a branch → `main` → `/ (root)`
+3. Sito: `https://high-cde.github.io/aesir/`
+
+APIs pubbliche attive (polygon.drpc.org, Solana mainnet). Nessuna chiave richiesta per uso base.
 
 ## Componenti backend
 
@@ -20,7 +25,7 @@ Apri `dashboard.html` (o abilita GitHub Pages) per:
 | `dsn_gate.py` + `dsn.env` | Gate balance $DSN via Polygon RPC |
 | `hybrid/hybrid_core.py` | Servizio Unix-socket che applica gate + policy |
 | `status_server.py` | HTTP status su 127.0.0.1:8080 |
-| `dashboard.html` | Dashboard crypto frontend |
+| `index.html` / `dashboard.html` | Dashboard crypto frontend |
 
 ## Policy engine
 
