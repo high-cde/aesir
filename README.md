@@ -1,5 +1,9 @@
 # Æsir — ZDOS Orchestration Layer + Crypto Dashboard
 
+> **STATUS: MAINNET ONLINE** ⚡⚖️
+> Branch `main` allineato, pulito e sincronizzato.
+> Ultimo allineamento: 2026-11-18
+
 Æsir contiene il policy engine Rust, il gate $DSN (Polygon + Solana) e una **dashboard crypto reale** client-side che replica lo stile estetico di [x-zdos.it](https://x-zdos.it) (dark + JetBrains Mono + emerald #00ff88 + Tailwind).
 
 ## Dashboard
@@ -38,3 +42,8 @@ cargo build --release --manifest-path policy/Cargo.toml
 I path in alcuni script sono hardcoded (`/root/zdos-aesir/...`). Usa variabili d'ambiente o adatta i path prima del deploy completo.
 
 $DSN Contract Polygon: `0xfc90516a1f736FaC557e09D8853dB80dA192c296`
+
+## Mainnet
+- Default branch: `main`
+- Stato: **LIVE / MAINNET**
+- Sincronizzazione: Completa
